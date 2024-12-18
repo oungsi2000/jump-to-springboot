@@ -3,6 +3,8 @@ package com.ll.jumptospringboot.domain.Question;
 import com.ll.jumptospringboot.domain.Answer.Answer;
 import com.ll.jumptospringboot.domain.Answer.AnswerForm;
 import com.ll.jumptospringboot.domain.Answer.AnswerService;
+import com.ll.jumptospringboot.domain.Comment.CommentForm;
+import com.ll.jumptospringboot.domain.Comment.CommentService;
 import com.ll.jumptospringboot.domain.User.SiteUser;
 import com.ll.jumptospringboot.domain.User.UserService;
 import jakarta.validation.Valid;
@@ -27,11 +29,13 @@ public class QuestionController {
     private final QuestionService service;
     private final UserService userService;
     private final AnswerService answerService;
+    private final CommentService commentService;
 
     @GetMapping(value = "/question/detail/{id}")
     public String detail(Model model,
                          @PathVariable("id") Integer id,
                          AnswerForm answerForm,
+                         CommentForm commentForm,
                          @RequestParam(value="index", defaultValue="0") int idx,
                          @RequestParam(value="sortBy", defaultValue="mostVoted") String sortBy) {
         Question question = service.getQuestion(id);
@@ -105,4 +109,16 @@ public class QuestionController {
         this.service.create(questionForm.getSubject(), questionForm.getContent(), siteUser);
         return "redirect:/"; // 질문 저장후 질문목록으로 이동
     }
+
+    @PreAuthorize("isAuthenticated()")
+    @PostMapping("/question/create/comment")
+    public String questionComment(@Valid CommentForm commentForm, BindingResult bindingResult, Principal principal) {
+        if (bindingResult.hasErrors()) {
+            return "question_detail";
+        }
+        SiteUser siteUser = this.userService.getUser(principal.getName());
+        commentService.createQuestionComment(siteUser, commentForm.getContent(), commentForm.getId());
+        return "question_detail"; // 질문 저장후 질문목록으로 이동
+    }
 }
+

@@ -36,7 +36,21 @@
                class="delete btn btn-sm btn-outline-secondary" sec:authorize="isAuthenticated()"
                th:if="${question.author != null and #authentication.getPrincipal().getUsername() == question.author.username}"
                th:text="삭제"></a>
+
+            <div class="comment-form mt-3">
+                <form>
+                    <div class="d-flex justify-content-lg-between align-items-center">
+                        <h4>댓글 작성</h4>
+                        <button type="submit" class="btn btn-primary">등록</button>
+                    </div>
+                    <div class="mb-3 mt-2">
+                        <textarea class="form-control" id="commentText" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
         </div>
+
+
 
         <h5 class="border-bottom my-3 py-2"
             th:text="| ${answerList.getTotalElements}개의 답변이 있습니다.|">
