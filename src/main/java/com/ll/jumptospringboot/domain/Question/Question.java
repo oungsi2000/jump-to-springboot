@@ -12,6 +12,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.ColumnDefault;
+import org.springframework.lang.NonNull;
 
 @Getter
 @Setter
@@ -37,6 +39,9 @@ public class Question {
 
     private LocalDateTime modifyDate;
 
+    @Column(nullable = false)
+    private Integer voter = 0;
+
     @ManyToMany
-    Set<SiteUser> voter;
+    private Set<SiteUser> voterInfo;
 }

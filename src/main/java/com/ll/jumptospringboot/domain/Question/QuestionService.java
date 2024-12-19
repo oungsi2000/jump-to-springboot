@@ -1,5 +1,6 @@
 package com.ll.jumptospringboot.domain.Question;
 
+import java.rmi.AlreadyBoundException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -7,6 +8,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import com.ll.jumptospringboot.AlreadyVotedException;
 import com.ll.jumptospringboot.domain.Answer.AnswerRepository;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
@@ -24,13 +26,19 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import lombok.RequiredArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
 
 @RequiredArgsConstructor
 @Service
 public class QuestionService {
 
     private final QuestionRepository questionRepository;
-    private final AnswerRepository answerRepository;
+
+    private boolean isAlreadyVoted (SiteUser user, Question question) {
+        Optional<Question> currentQuestion = questionRepository.findById(question.getId());
+        assert currentQuestion.isPresent() : "question should be found when voting";
+        return currentQuestion.get().getVoterInfo().contains(user);
+    }
 
     public Page<Question> getList(int page, String kw) {
         List<Sort.Order> sorts = new ArrayList<>();
@@ -43,7 +51,7 @@ public class QuestionService {
     public Question getQuestion(Integer id) {
         Optional<Question> question = questionRepository.findById(id);
         if (question.isPresent()) {
-            question.get().getAnswerList().sort((a,b)->b.getVoter().size() - a.getVoter().size());
+            question.get().getAnswerList().sort((a,b)->b.getVoter() - a.getVoter());
             return question.get();
         } else {
             throw new DataNotFoundException("question not found");
@@ -70,8 +78,12 @@ public class QuestionService {
         this.questionRepository.delete(question);
     }
 
+    @Transactional
     public void vote(Question question, SiteUser siteUser) {
-        question.getVoter().add(siteUser);
+        if (isAlreadyVoted(siteUser, question)) {
+            throw new AlreadyVotedException("이미 추천하였습니다");
+        }
+        question.setVoter(question.getVoter()+1);
         this.questionRepository.save(question);
     }
 

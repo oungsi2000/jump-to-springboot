@@ -8,6 +8,7 @@ import com.ll.jumptospringboot.domain.User.SiteUser;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
 
 @Getter
 @Setter
@@ -33,7 +34,9 @@ public class Answer {
 
     private LocalDateTime modifyDate;
 
-    @ManyToMany
-    Set<SiteUser> voter;
+    @Column(nullable = false)
+    private Integer voter = 0;
 
+    @ManyToMany
+    private Set<SiteUser> voterInfo;
 }

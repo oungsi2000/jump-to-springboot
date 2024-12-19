@@ -1,5 +1,6 @@
 package com.ll.jumptospringboot.domain.Answer;
 
+import com.ll.jumptospringboot.AlreadyVotedException;
 import com.ll.jumptospringboot.DataNotFoundException;
 import com.ll.jumptospringboot.domain.Question.Question;
 import com.ll.jumptospringboot.domain.User.SiteUser;
@@ -8,16 +9,22 @@ import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
+
 
 @RequiredArgsConstructor
 @Service
 public class AnswerService {
     private final AnswerRepository answerRepository;
+
+    private boolean isAlreadyVoted (SiteUser user, Integer AnswerId) {
+        Optional<Answer> currentAnswer = answerRepository.findById(AnswerId);
+        assert currentAnswer.isPresent() : "question should be found when voting";
+        return currentAnswer.get().getVoterInfo().contains(user);
+    }
 
     public Answer create(Question question, String content, SiteUser author) {
         Answer answer = new Answer();
@@ -49,8 +56,12 @@ public class AnswerService {
         this.answerRepository.delete(answer);
     }
 
+    @Transactional
     public void vote(Answer answer, SiteUser siteUser) {
-        answer.getVoter().add(siteUser);
+        if (isAlreadyVoted(siteUser, answer.getId())) {
+            throw new AlreadyVotedException("이미 추천하였습니다");
+        }
+        answer.setVoter(answer.getVoter()+1);
         this.answerRepository.save(answer);
     }
 

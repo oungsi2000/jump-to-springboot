@@ -40,8 +40,6 @@ public class QuestionController {
                          @RequestParam(value="sortBy", defaultValue="mostVoted") String sortBy) {
         Question question = service.getQuestion(id);
         Page<Answer> answerList = answerService.getList(question, idx, sortBy);
-        System.out.println(answerList.getTotalPages());
-        System.out.println(answerList.getTotalElements());
         model.addAttribute("question", question);
         model.addAttribute("answerList", answerList);
         return "question_detail";
