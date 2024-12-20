@@ -4,6 +4,7 @@ import com.ll.jumptospringboot.domain.Answer.Answer;
 import com.ll.jumptospringboot.domain.Question.Question;
 import com.ll.jumptospringboot.domain.User.SiteUser;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
 import lombok.Setter;
 

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.ll.jumptospringboot.domain.Answer.Answer;
+import com.ll.jumptospringboot.domain.Comment.Comment;
 import com.ll.jumptospringboot.domain.User.SiteUser;
 import jakarta.persistence.*;
 
@@ -44,4 +45,7 @@ public class Question {
 
     @ManyToMany
     private Set<SiteUser> voterInfo;
+
+    @OneToMany(mappedBy = "question", cascade = CascadeType.REMOVE)
+    private List<Comment> comments;
 }

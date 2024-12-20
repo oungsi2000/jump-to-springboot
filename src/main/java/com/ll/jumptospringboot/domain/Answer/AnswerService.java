@@ -77,6 +77,5 @@ public class AnswerService {
             Pageable pageable = PageRequest.of(page,10, Sort.by(sorts));
             return this.answerRepository.findAllByQuestion(question, pageable);
         }
-
     }
 }

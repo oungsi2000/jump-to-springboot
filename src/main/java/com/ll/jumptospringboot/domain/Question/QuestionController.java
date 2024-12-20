@@ -3,10 +3,12 @@ package com.ll.jumptospringboot.domain.Question;
 import com.ll.jumptospringboot.domain.Answer.Answer;
 import com.ll.jumptospringboot.domain.Answer.AnswerForm;
 import com.ll.jumptospringboot.domain.Answer.AnswerService;
+import com.ll.jumptospringboot.domain.Comment.Comment;
 import com.ll.jumptospringboot.domain.Comment.CommentForm;
 import com.ll.jumptospringboot.domain.Comment.CommentService;
 import com.ll.jumptospringboot.domain.User.SiteUser;
 import com.ll.jumptospringboot.domain.User.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -22,6 +24,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.security.Principal;
+import java.util.List;
+import java.util.Map;
 
 @RequiredArgsConstructor
 @Controller
@@ -40,6 +44,11 @@ public class QuestionController {
                          @RequestParam(value="sortBy", defaultValue="mostVoted") String sortBy) {
         Question question = service.getQuestion(id);
         Page<Answer> answerList = answerService.getList(question, idx, sortBy);
+        List<Comment> questionComments = commentService.getQuestionComments(question);
+        Map<Integer, List<Comment>> answerComments = commentService.getAnswerComments(question);
+
+        model.addAttribute("questionComments", questionComments);
+        model.addAttribute("answerComments", answerComments);
         model.addAttribute("question", question);
         model.addAttribute("answerList", answerList);
         return "question_detail";
@@ -110,13 +119,27 @@ public class QuestionController {
 
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/question/create/comment")
-    public String questionComment(@Valid CommentForm commentForm, BindingResult bindingResult, Principal principal) {
+    public String questionComment(@Valid CommentForm commentForm,
+                                  BindingResult bindingResult,
+                                  Principal principal,
+                                  HttpServletRequest request) {
+        String referer = request.getHeader("Referer");
+
         if (bindingResult.hasErrors()) {
-            return "question_detail";
+            if (referer != null) {
+                return "redirect:" + referer;
+            } else {
+                return "redirect:/";
+            }
         }
         SiteUser siteUser = this.userService.getUser(principal.getName());
         commentService.createQuestionComment(siteUser, commentForm.getContent(), commentForm.getId());
-        return "question_detail"; // 질문 저장후 질문목록으로 이동
+        if (referer != null) {
+            return "redirect:" + referer;
+        } else {
+            return "redirect:/";
+        }
+        // 질문 저장후 질문목록으로 이동
     }
 }
 

@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.*;
+
 @Service
 @RequiredArgsConstructor
 public class CommentService {
@@ -35,7 +37,20 @@ public class CommentService {
         commentRepository.save(comment);
     }
 
-    public void getQuestionComments(Question question) {
-//        commentRepository.findAllByQuestion(question);
+    public List<Comment> getQuestionComments(Question question) {
+        return commentRepository.findAllByQuestion(question);
+    }
+
+    public Map<Integer, List<Comment>> getAnswerComments(Question question) {
+        Map<Integer, List<Comment>> result = new HashMap<>();
+        commentRepository.findAllAnswerComments(question).forEach(
+            (it)->{
+                Integer answerId = (Integer) it[1];
+                Comment comment = (Comment) it[0];
+                result.putIfAbsent(answerId, new ArrayList<>());
+                result.get(answerId).add(comment);
+            }
+        );
+        return result;
     }
 }

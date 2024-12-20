@@ -1,9 +1,12 @@
 package com.ll.jumptospringboot.domain.Answer;
 
+import com.ll.jumptospringboot.domain.Comment.CommentForm;
+import com.ll.jumptospringboot.domain.Comment.CommentService;
 import com.ll.jumptospringboot.domain.Question.Question;
 import com.ll.jumptospringboot.domain.Question.QuestionService;
 import com.ll.jumptospringboot.domain.User.SiteUser;
 import com.ll.jumptospringboot.domain.User.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -24,6 +27,7 @@ public class AnswerController {
     private final AnswerService answerService;
     private final UserService userService;
     private final QuestionService questionService;
+    private final CommentService commentService;
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/answer/modify/{id}")
@@ -85,5 +89,28 @@ public class AnswerController {
         this.answerService.modify(answer, answerForm.getContent());
         return String.format("redirect:/question/detail/%s#answer_%s",
             answer.getQuestion().getId(), answer.getId());
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @PostMapping("/answer/create/comment")
+    public String questionComment(@Valid CommentForm commentForm,
+                                  BindingResult bindingResult,
+                                  Principal principal,
+                                  HttpServletRequest request) {
+        String referer = request.getHeader("Referer");
+
+        if (bindingResult.hasErrors()) {
+            if (referer != null) {
+                return "redirect:" + referer;
+            } else {
+                return "redirect:/";
+            }        }
+        SiteUser siteUser = this.userService.getUser(principal.getName());
+        commentService.createAnswerComment(siteUser, commentForm.getContent(), commentForm.getId());
+        if (referer != null) {
+            return "redirect:" + referer;
+        } else {
+            return "redirect:/";
+        }        // 질문 저장후 질문목록으로 이동
     }
 }
