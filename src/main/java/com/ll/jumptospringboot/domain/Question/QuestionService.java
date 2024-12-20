@@ -10,6 +10,8 @@ import java.util.Optional;
 
 import com.ll.jumptospringboot.AlreadyVotedException;
 import com.ll.jumptospringboot.domain.Answer.AnswerRepository;
+import com.ll.jumptospringboot.domain.Category.Category;
+import com.ll.jumptospringboot.domain.Category.CategoryRepository;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Join;
@@ -33,6 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class QuestionService {
 
     private final QuestionRepository questionRepository;
+    private final CategoryRepository categoryRepository;
 
     private boolean isAlreadyVoted (SiteUser user, Question question) {
         Optional<Question> currentQuestion = questionRepository.findById(question.getId());
@@ -58,12 +61,15 @@ public class QuestionService {
         }
     }
 
-    public void create(String subject, String content, SiteUser user) {
+    public void create(QuestionForm questionForm, SiteUser user) {
         Question q = new Question();
-        q.setTitle(subject);
-        q.setContent(content);
+        Optional<Category> c =  categoryRepository.findById(questionForm.getCategoryId());
+        assert c.isPresent() : "";
+        q.setTitle(questionForm.getSubject());
+        q.setContent(questionForm.getContent());
         q.setCreateDate(LocalDateTime.now());
         q.setAuthor(user);
+        q.setCategory(c.get());
         this.questionRepository.save(q);
     }
 

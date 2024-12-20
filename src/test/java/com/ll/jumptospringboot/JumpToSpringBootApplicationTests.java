@@ -40,22 +40,6 @@ class JumpToSpringBootApplicationTests {
     }
 
     @Test
-    void testJpa() {
-        for (int i = 1; i <= 300; i++) {
-            String subject = String.format("테스트 데이터입니다:[%03d]", i);
-            String content = "내용무";
-            this.questionService.create(subject, content, null);
-        }
-    }
-
-    @Test
-    @DisplayName("ManyToMany sql쿼리 확인")
-    void t1() {
-        Optional<Question> q = this.questionRepository.findById(1);
-        q.get().getVoter().add(new SiteUser());
-    }
-
-    @Test
     @DisplayName("더미 답변 데이터 생성")
     @Transactional
     @Rollback(false)

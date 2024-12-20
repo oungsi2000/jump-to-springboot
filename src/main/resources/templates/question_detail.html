@@ -3,7 +3,8 @@
 <div layout:fragment="content" class="container my-3">
 
     <body>
-    <h2 class="border-bottom py-2" th:text="${question.title}"></h2>
+    <h2 class="py-2" th:text="${question.title}"></h2>
+    <h6 class="border-bottom py-1 mb-1" th:text="'카테고리 :' + ${question.category.getTitle()}"></h6>
         <div class="card my-3">
             <div class="card-body">
                 <div class="card-text" th:utext="${@commonUtil.markdown(question.content)}"></div>

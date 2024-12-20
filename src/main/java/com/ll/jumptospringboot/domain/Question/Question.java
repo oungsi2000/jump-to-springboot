@@ -1,20 +1,17 @@
 package com.ll.jumptospringboot.domain.Question;
 
-import java.beans.Transient;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
 import com.ll.jumptospringboot.domain.Answer.Answer;
+import com.ll.jumptospringboot.domain.Category.Category;
 import com.ll.jumptospringboot.domain.Comment.Comment;
 import com.ll.jumptospringboot.domain.User.SiteUser;
 import jakarta.persistence.*;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.Cascade;
-import org.hibernate.annotations.ColumnDefault;
-import org.springframework.lang.NonNull;
 
 @Getter
 @Setter
@@ -48,4 +45,7 @@ public class Question {
 
     @OneToMany(mappedBy = "question", cascade = CascadeType.REMOVE)
     private List<Comment> comments;
+
+    @ManyToOne
+    private Category category;
 }

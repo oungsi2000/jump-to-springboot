@@ -3,6 +3,9 @@ package com.ll.jumptospringboot.domain.Question;
 import com.ll.jumptospringboot.domain.Answer.Answer;
 import com.ll.jumptospringboot.domain.Answer.AnswerForm;
 import com.ll.jumptospringboot.domain.Answer.AnswerService;
+import com.ll.jumptospringboot.domain.Category.Category;
+import com.ll.jumptospringboot.domain.Category.CategoryForm;
+import com.ll.jumptospringboot.domain.Category.CategoryService;
 import com.ll.jumptospringboot.domain.Comment.Comment;
 import com.ll.jumptospringboot.domain.Comment.CommentForm;
 import com.ll.jumptospringboot.domain.Comment.CommentService;
@@ -34,6 +37,7 @@ public class QuestionController {
     private final UserService userService;
     private final AnswerService answerService;
     private final CommentService commentService;
+    private final CategoryService categoryService;
 
     @GetMapping(value = "/question/detail/{id}")
     public String detail(Model model,
@@ -55,19 +59,24 @@ public class QuestionController {
     }
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/question/create")
-    public String questionCreate(QuestionForm questionForm) {
+    public String questionCreate(QuestionForm questionForm, CategoryForm categoryForm, Model model) {
+        List<Category> categories = categoryService.getList();
+        model.addAttribute("categories", categories);
         return "question_form";
     }
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/question/modify/{id}")
-    public String questionModify(QuestionForm questionForm, @PathVariable("id") Integer id, Principal principal) {
+    public String questionModify(QuestionForm questionForm, CategoryForm categoryForm, Model model, @PathVariable("id") Integer id, Principal principal) {
         Question question = this.service.getQuestion(id);
         if(!question.getAuthor().getUsername().equals(principal.getName())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "수정권한이 없습니다.");
         }
         questionForm.setSubject(question.getTitle());
         questionForm.setContent(question.getContent());
+        List<Category> categories = categoryService.getList();
+        model.addAttribute("categories", categories);
+
         return "question_form";
     }
 
@@ -93,9 +102,14 @@ public class QuestionController {
 
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/question/modify/{id}")
-    public String questionModify(@Valid QuestionForm questionForm, BindingResult bindingResult,
+    public String questionModify(@Valid QuestionForm questionForm,
+                                 CategoryForm categoryform,
+                                 BindingResult bindingResult,
+                                 Model model,
                                  Principal principal, @PathVariable("id") Integer id) {
         if (bindingResult.hasErrors()) {
+            List<Category> categories = categoryService.getList();
+            model.addAttribute("categories", categories);
             return "question_form";
         }
         Question question = this.service.getQuestion(id);
@@ -108,12 +122,18 @@ public class QuestionController {
 
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/question/create")
-    public String questionCreate(@Valid QuestionForm questionForm, BindingResult bindingResult, Principal principal) {
+    public String questionCreate(@Valid QuestionForm questionForm,
+                                 BindingResult bindingResult,
+                                 CategoryForm categoryform,
+                                 Model model,
+                                 Principal principal) {
         if (bindingResult.hasErrors()) {
+            List<Category> categories = categoryService.getList();
+            model.addAttribute("categories", categories);
             return "question_form";
         }
         SiteUser siteUser = this.userService.getUser(principal.getName());
-        this.service.create(questionForm.getSubject(), questionForm.getContent(), siteUser);
+        this.service.create(questionForm, siteUser);
         return "redirect:/"; // 질문 저장후 질문목록으로 이동
     }
 
